@@ -8,9 +8,10 @@ def codebase_reader(dir: str) -> list[dict[str, Any]]:
     root = Path(dir)
     codebase = []
     for file in root.rglob("*"):
-        if file.suffix == ".py" or file.suffix == ".md":
-            with open(file, "r") as f:
-                content = f.read()
-                codebase.append({"content": content, "file_path": file})
+        if not file.is_file():
+            continue
+        if file.suffix in {".py", ".md"}:
+            content = file.read_text(encoding="utf-8", errors="ignore")
+            codebase.append({"content": content, "file_path": str(file)})
 
     return codebase
