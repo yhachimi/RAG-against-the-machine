@@ -37,7 +37,7 @@ def python_code_chunker(python_code: dict[str, str]) -> list[dict[str, Any]]:
             {
                 "type": "imports",
                 "file_path": python_code["file_path"],
-                "name": "__imports__",
+                "title": "__imports__",
                 "content": imports,
                 "start": 0,
                 "end": 0, })
@@ -48,8 +48,10 @@ def python_code_chunker(python_code: dict[str, str]) -> list[dict[str, Any]]:
              ast.AsyncFunctionDef,
              ast.ClassDef)):
             data: dict[str, Any] = {}
-            data["name"] = node.name
+            data["title"] = node.name
             start = node.lineno - 1
+            if node.end_lineno is None:
+                continue
             end = node.end_lineno
             data["type"] = type(node).__name__
             data["content"] = "\n".join(lines[start: end])
@@ -59,3 +61,39 @@ def python_code_chunker(python_code: dict[str, str]) -> list[dict[str, Any]]:
             result.append(data)
 
     return result
+
+
+def markdown_chunker(markdown: dict[str, str]) -> list[dict[str, Any]]:
+    content = markdown["content"]
+    lines = content.splitlines()
+    current_title = "__intro__"
+    current_lines: list[str] = []
+    sections = []
+    start = 1
+    for lineno, line in enumerate(lines, start=1):
+        if line.startswith("#"):
+            if current_title:
+                sections.append(
+                    {"title": current_title,
+                     "type": "markdown_section",
+                     "content": "\n".join(current_lines),
+                     "file_path": markdown["file_path"],
+                     "start": start,
+                     "end": lineno - 1},)
+
+            current_title = line.lstrip("# ").strip()
+            start = lineno
+            current_lines = []
+        else:
+            current_lines.append(line)
+    sections.append(
+        {
+            "type": "markdown_section",
+            "title": current_title,
+            "content": "\n".join(current_lines),
+            "file_path": markdown["file_path"],
+            "start": start,
+            "end": len(lines)
+        }
+    )
+    return sections
