@@ -19,6 +19,7 @@ def codebase_reader(directory: str) -> list[dict[str, Any]]:
 
 
 def python_code_chunker(python_code: dict[str, str]) -> list[dict[str, Any]]:
+    """move the python code into chunks using the ast  model"""
     try:
         tree = ast.parse(python_code["content"])
     except SyntaxError:
