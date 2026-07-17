@@ -24,6 +24,9 @@ def main() -> None:
             chunked = markdown_chunker(document)
             all_chunks.extend(chunked)
 
+    for chunk_id, chunk in enumerate(all_chunks):
+             chunk["id"] = chunk_id 
+
 
 if __name__ == "__main__":
     try:
