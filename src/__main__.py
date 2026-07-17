@@ -2,6 +2,7 @@ from pathlib import Path
 
 from .codebase_reader import (codebase_reader, markdown_chunker,
                               python_code_chunker)
+from .tokenization import calc_docs_lenghts, tokens_genrate
 
 RED = '\033[0;31m'
 RESET = '\033[1;37m'
@@ -25,7 +26,11 @@ def main() -> None:
             all_chunks.extend(chunked)
 
     for chunk_id, chunk in enumerate(all_chunks):
-             chunk["id"] = chunk_id 
+        chunk["id"] = chunk_id
+
+    all_tokens = tokens_genrate(all_chunks)
+    all_docs_lengths = calc_docs_lenghts(all_tokens)
+    avg_doc_len = sum(all_docs_lengths) / len(all_docs_lengths)
 
 
 if __name__ == "__main__":
