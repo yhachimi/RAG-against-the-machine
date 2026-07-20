@@ -3,6 +3,7 @@ from pathlib import Path
 
 from .codebase_reader import (codebase_reader, markdown_chunker,
                               python_code_chunker)
+from .models import Chunk
 from .tokenization import calc_docs_lenghts, document_frequency, tokens_genrate
 
 RED = '\033[0;31m'
@@ -24,7 +25,7 @@ def logo_animated():
 
 def main() -> None:
     """the main functions where the code starts"""
-    all_chunks = []
+    all_chunks: list[Chunk] = []
     logo_animated()
     code_base = codebase_reader("vllm-0.10.1")
     for document in code_base:
@@ -38,7 +39,7 @@ def main() -> None:
             all_chunks.extend(chunked)
 
     for chunk_id, chunk in enumerate(all_chunks):
-        chunk["id"] = chunk_id
+        chunk.id = chunk_id
 
     all_tokens = tokens_genrate(all_chunks)
     all_docs_lengths = calc_docs_lenghts(all_tokens)

@@ -1,12 +1,12 @@
-from typing import Any
+from .models import Chunk
 
 
-def tokens_genrate(all_chunks: list[dict[str, Any]]) -> list[list[str]]:
+def tokens_genrate(all_chunks: list[dict[Chunk]]) -> list[list[str]]:
     """genrate a valid toknz from the code_base"""
     all_tokens = []
     UNWANTED_CHARS = set(".,:;()[]{}<>=+-*/\\|&!?@#$%^~`\"'")
     for chunk in all_chunks:
-        search_text = chunk["title"] + "\n" + chunk["content"]
+        search_text = chunk.title + "\n" + chunk.content
         splited_text = search_text.split()
         tokens = ["".join([c for c in token.lower()
                            if c not in UNWANTED_CHARS])

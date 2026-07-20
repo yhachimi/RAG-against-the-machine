@@ -2,6 +2,8 @@ import ast
 from pathlib import Path
 from typing import Any
 
+from .models import Chunk
+
 
 def codebase_reader(directory: str) -> list[dict[str, Any]]:
     """this functions is the first step  in the indexing part
@@ -18,7 +20,7 @@ def codebase_reader(directory: str) -> list[dict[str, Any]]:
     return codebase
 
 
-def python_code_chunker(python_code: dict[str, str]) -> list[dict[str, Any]]:
+def python_code_chunker(python_code: dict[str, str]) -> list[Chunk]:
     """move the python code into chunks using the ast  model"""
     try:
         tree = ast.parse(python_code["content"])
@@ -33,14 +35,15 @@ def python_code_chunker(python_code: dict[str, str]) -> list[dict[str, Any]]:
             imports += ast.unparse(node) + "\n"
 
     if imports:
-        result.append(
-            {
-                "type": "imports",
-                "file_path": python_code["file_path"],
-                "title": "__imports__",
-                "content": imports,
-                "start": 0,
-                "end": 0, })
+        imp = {"type": "imports",
+               "file_path": python_code["file_path"],
+               "title": "__imports__",
+               "content": imports,
+               "start": 0,
+               "end": 0,
+               "id": 0}
+
+        result.append(Chunk(**imp))
     for node in tree.body:
         if isinstance(
             node,
@@ -58,12 +61,13 @@ def python_code_chunker(python_code: dict[str, str]) -> list[dict[str, Any]]:
             data["start"] = start
             data["end"] = end
             data["file_path"] = python_code["file_path"]
-            result.append(data)
+            data["id"] = 0
+            result.append(Chunk(**data))
 
     return result
 
 
-def markdown_chunker(markdown: dict[str, str]) -> list[dict[str, Any]]:
+def markdown_chunker(markdown: dict[str, str]) -> list[Chunk]:
     content = markdown["content"]
     lines = content.splitlines()
     current_title = "__intro__"
@@ -73,27 +77,29 @@ def markdown_chunker(markdown: dict[str, str]) -> list[dict[str, Any]]:
     for lineno, line in enumerate(lines, start=1):
         if line.startswith("#"):
             if current_title:
-                sections.append(
-                    {"title": current_title,
-                     "type": "markdown_section",
-                     "content": "\n".join(current_lines),
-                     "file_path": markdown["file_path"],
-                     "start": start,
-                     "end": lineno - 1},)
+                section = {
+                    "title": current_title,
+                    "type": "markdown_section",
+                    "content": "\n".join(current_lines),
+                    "file_path": markdown["file_path"],
+                    "start": start,
+                    "end": lineno - 1,
+                    "id": 0}
+                sections.append(Chunk(**section))
 
             current_title = line.lstrip("# ").strip()
             start = lineno
             current_lines = []
         else:
             current_lines.append(line)
-    sections.append(
-        {
-            "type": "markdown_section",
-            "title": current_title,
-            "content": "\n".join(current_lines),
-            "file_path": markdown["file_path"],
-            "start": start,
-            "end": len(lines)
-        }
-    )
+    section = {
+        "type": "markdown_section",
+        "title": current_title,
+        "content": "\n".join(current_lines),
+        "file_path": markdown["file_path"],
+        "start": start,
+        "end": len(lines),
+        "id": 0,
+    }
+    sections.append(Chunk(**section))
     return sections
