@@ -35,13 +35,13 @@ def python_code_chunker(python_code: dict[str, str]) -> list[Chunk]:
             imports += ast.unparse(node) + "\n"
 
     if imports:
-        imp = {"type": "imports",
-               "file_path": python_code["file_path"],
-               "title": "__imports__",
-               "content": imports,
-               "start": 0,
-               "end": 0,
-               "id": 0}
+        imp: dict[str, Any] = {"type": "imports",
+                               "file_path": python_code["file_path"],
+                               "title": "__imports__",
+                               "content": imports,
+                               "start": 0,
+                               "end": 0,
+                               "id": 0}
 
         result.append(Chunk(**imp))
     for node in tree.body:
@@ -77,7 +77,7 @@ def markdown_chunker(markdown: dict[str, str]) -> list[Chunk]:
     for lineno, line in enumerate(lines, start=1):
         if line.startswith("#"):
             if current_title:
-                section = {
+                section: dict[str, Any] = {
                     "title": current_title,
                     "type": "markdown_section",
                     "content": "\n".join(current_lines),

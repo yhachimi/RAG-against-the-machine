@@ -1,7 +1,8 @@
 from .codebase_reader import (codebase_reader, markdown_chunker,
                               python_code_chunker)
 from .tokenization import (tokens_genrate, calc_docs_lenghts,
-                           document_frequency)
+                           document_frequency,
+                           inverse_docs_frequency)
 
 from .models import Chunk, BM25_DATA
 
@@ -13,4 +14,5 @@ __all__ = [
     "calc_docs_lenghts",
     "document_frequency",
     "Chunk",
-    "BM25_DATA"]
+    "BM25_DATA",
+    "inverse_docs_frequency"]

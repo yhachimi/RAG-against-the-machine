@@ -1,7 +1,9 @@
+from math import log
+
 from .models import Chunk
 
 
-def tokens_genrate(all_chunks: list[dict[Chunk]]) -> list[list[str]]:
+def tokens_genrate(all_chunks: list[Chunk]) -> list[list[str]]:
     """genrate a valid toknz from the code_base"""
     all_tokens = []
     UNWANTED_CHARS = set(".,:;()[]{}<>=+-*/\\|&!?@#$%^~`\"'")
@@ -68,3 +70,15 @@ def term_frequency(
         tf.append(tfs)
 
     return tf
+
+
+def inverse_docs_frequency(df: dict[str, int], N: int) -> dict[str, float]:
+    """Calculate the inverse document frequency (IDF) for each token
+        using the standard BM25 formula.
+        IDF(t) = log(1 + (N - df(t) + 0.5) / (df(t) + 0.5)
+                     """
+    idf = {}
+    for key, value in df.items():
+        idf[key] = log(1 + ((N - value + 0.5) / (value + 0.5)))
+
+    return idf

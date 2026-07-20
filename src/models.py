@@ -14,7 +14,6 @@ class Chunk(BaseModel):
 class BM25_DATA(BaseModel):
     all_tokens: list[list[str]]
     all_docs_lenghts: list[int]
-    avg_doc_lenght: int 
+    avg_doc_lenght: float
     documnts_frequency: dict[str, int]
     idf: dict[str, float]
-

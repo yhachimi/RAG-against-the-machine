@@ -3,8 +3,9 @@ from pathlib import Path
 
 from .codebase_reader import (codebase_reader, markdown_chunker,
                               python_code_chunker)
-from .models import Chunk
-from .tokenization import calc_docs_lenghts, document_frequency, tokens_genrate
+from .models import BM25_DATA, Chunk
+from .tokenization import (calc_docs_lenghts, document_frequency,
+                           inverse_docs_frequency, tokens_genrate)
 
 RED = '\033[0;31m'
 RESET = '\033[1;37m'
@@ -14,7 +15,8 @@ GRAY = '\033[37m'
 DIAMOND = "\033[0;93;1;40m"
 
 
-def logo_animated():
+def logo_animated() -> None:
+    """   RAG LOGO ANIMATED """
     with open("src/logo", "r") as logo:
         lines = logo.read().splitlines()
         for line in lines:
@@ -41,10 +43,19 @@ def main() -> None:
         chunk.id = chunk_id
 
     all_tokens = tokens_genrate(all_chunks)
-    all_docs_lengths = calc_docs_lenghts(all_tokens)
-    avg_doc_lenght = sum(all_docs_lengths) / len(all_docs_lengths)
+    all_docs_lenghts = calc_docs_lenghts(all_tokens)
+    avg_doc_lenght = sum(all_docs_lenghts) / len(all_docs_lenghts)
     documnts_frequency: dict[str, int] = document_frequency(all_tokens)
-    idf: dict[str, float]
+    idf: dict[str, float] = inverse_docs_frequency(
+        documnts_frequency, len(all_chunks))
+    bm25_data = BM25_DATA(
+        all_tokens=all_tokens,
+        all_docs_lenghts=all_docs_lenghts,
+        avg_doc_lenght=avg_doc_lenght,
+        documnts_frequency=documnts_frequency,
+        idf=idf)
+
+    print(bm25_data)
 
 
 if __name__ == "__main__":
@@ -52,3 +63,6 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         print(f"{RED}{e}{RESET}")
+
+    except KeyboardInterrupt:
+        pass
