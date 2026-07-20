@@ -26,3 +26,18 @@ def calc_docs_lenghts(all_tokens: list[list[str]]) -> list[int]:
         i += 1
 
     return all_docs_lenght
+
+
+def document_frequency(all_tokens: list[list[str]]) -> dict[str, int]:
+    """count the docmments frequency for all tokens genrated"""
+    df: dict[str, int] = {}
+
+    for tokens in all_tokens:
+        unique_tokens = set(tokens)
+        for token in unique_tokens:
+            if token not in df:
+                df[token] = 1
+            else:
+                df[token] += 1
+
+    return df
