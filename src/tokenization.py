@@ -41,3 +41,30 @@ def document_frequency(all_tokens: list[list[str]]) -> dict[str, int]:
                 df[token] += 1
 
     return df
+
+
+def query_tokens_genrate(query: str) -> list[str]:
+    """genrate the user query tokens"""
+    splited_query = query.split()
+    tokens = []
+    UNWANTED_CHARS = set(".,:;()[]{}<>=+-*/\\|&!?@#$%^~`\"'")
+    for word in splited_query:
+        token = ("".join([c for c in word.lower() if c not in UNWANTED_CHARS]))
+        if token:
+            tokens.append(token)
+
+    return tokens
+
+
+def term_frequency(
+        query_tokens: list[str],
+        all_tokens: list[list[str]]) -> list[dict[str, int]]:
+    """calc the  user query  term  frequency"""
+    tf = []
+    for tokens in all_tokens:
+        tfs = {}
+        for token in set(query_tokens):
+            tfs[token] = tokens.count(token)
+        tf.append(tfs)
+
+    return tf

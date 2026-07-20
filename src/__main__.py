@@ -42,7 +42,7 @@ def main() -> None:
 
     all_tokens = tokens_genrate(all_chunks)
     all_docs_lengths = calc_docs_lenghts(all_tokens)
-    avg_docs_lengh = sum(all_docs_lengths) / len(all_docs_lengths)
+    avg_doc_lenght = sum(all_docs_lengths) / len(all_docs_lengths)
     documnts_frequency: dict[str, int] = document_frequency(all_tokens)
 
 
