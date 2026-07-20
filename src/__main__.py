@@ -44,6 +44,7 @@ def main() -> None:
     all_docs_lengths = calc_docs_lenghts(all_tokens)
     avg_doc_lenght = sum(all_docs_lengths) / len(all_docs_lengths)
     documnts_frequency: dict[str, int] = document_frequency(all_tokens)
+    idf: dict[str, float]
 
 
 if __name__ == "__main__":
