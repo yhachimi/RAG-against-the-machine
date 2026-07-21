@@ -4,7 +4,7 @@ from .tokenization import (tokens_genrate, calc_docs_lenghts,
                            document_frequency,
                            inverse_docs_frequency)
 
-from .models import Chunk, BM25_DATA
+from .models import Chunk, BM25_DATA, MinimalSource
 
 __all__ = [
     "codebase_reader",
@@ -15,4 +15,5 @@ __all__ = [
     "document_frequency",
     "Chunk",
     "BM25_DATA",
+    "MinimalSource",
     "inverse_docs_frequency"]

@@ -41,7 +41,6 @@ def main() -> None:
 
     for chunk_id, chunk in enumerate(all_chunks):
         chunk.id = chunk_id
-
     all_tokens = tokens_genrate(all_chunks)
     all_docs_lenghts = calc_docs_lenghts(all_tokens)
     avg_doc_lenght = sum(all_docs_lenghts) / len(all_docs_lenghts)
