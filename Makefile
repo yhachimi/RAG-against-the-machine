@@ -4,7 +4,7 @@ install:
 	@uv sync
 
 run: 
-	@uv run python3 -m src
+	@uv run python3 -m src index
 
 
 debug:

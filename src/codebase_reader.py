@@ -2,6 +2,8 @@ import ast
 from pathlib import Path
 from typing import Any
 
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 from .models import Chunk
 
 
@@ -18,6 +20,46 @@ def codebase_reader(directory: str) -> list[dict[str, Any]]:
             codebase.append({"content": content, "file_path": str(file)})
 
     return codebase
+
+
+def metdata_solver(chunks: list[str], chunk: Chunk) -> list[Chunk]:
+    current_offset = 0
+    res: list[Chunk] = []
+    data: dict[str, Any] = {}
+    data["file_path"] = chunk.file_path
+    data["type"] = chunk.type
+    data["title"] = chunk.title
+    data["id"] = chunk.id
+    for piece in chunks:
+        start = chunk.content.find(piece, current_offset)
+        end = start + len(piece) - 1
+        current_offset = end + 1
+        data["content"] = piece
+        data["first_character_index"] = chunk.first_character_index + start
+        data["last_character_index"] = chunk.first_character_index + end
+        data["start"] = chunk.start
+        data["end"] = chunk.end
+        res.append(Chunk(**data))
+    return res
+
+
+def split_chunks(all_chunks: list[Chunk], chunk_size: int) -> list[Chunk]:
+    new_chunks: list[Chunk] = []
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=2000,
+        chunk_overlap=200,
+        separators=["\n\n", "\n", ". ", " ", ""],
+    )
+
+    for chunk in all_chunks:
+        if len(chunk.content) <= chunk_size:
+            new_chunks.append(chunk)
+
+        else:
+            chunks = splitter.split_text(chunk.content)
+            new_chunks.extend(metdata_solver(chunks, chunk))
+
+    return new_chunks
 
 
 def python_code_chunker(python_code: dict[str, str]) -> list[Chunk]:
