@@ -9,6 +9,8 @@ class Chunk(BaseModel):
     start: int
     end: int
     id: int
+    first_character_index: int
+    last_character_index: int
 
 
 class BM25_DATA(BaseModel):

@@ -55,7 +55,7 @@ def main() -> None:
         documnts_frequency=documnts_frequency,
         idf=idf)
 
-    print(bm25_data)
+    print(bm25_data.avg_doc_lenght)
 
 
 if __name__ == "__main__":

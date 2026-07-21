@@ -26,22 +26,37 @@ def python_code_chunker(python_code: dict[str, str]) -> list[Chunk]:
         tree = ast.parse(python_code["content"])
     except SyntaxError:
         return []
-    result = []
+    result: list[Chunk] = []
     imports: str = ""
     content = python_code["content"]
-    lines = content.splitlines()
+    lines = content.splitlines(keepends=True)
+    offset = 0
+    line_offsets = []
+    for line in lines:
+        line_offsets.append(offset)
+        offset += len(line)
+    all_imports = []
     for node in tree.body:
         if isinstance(node, (ast.Import, ast.ImportFrom)):
+            all_imports.append(node)
             imports += ast.unparse(node) + "\n"
 
     if imports:
+        first_import = all_imports[0]
+        last_import = all_imports[-1]
+        if last_import.end_lineno is None:
+            return result
         imp: dict[str, Any] = {"type": "imports",
                                "file_path": python_code["file_path"],
                                "title": "__imports__",
                                "content": imports,
-                               "start": 0,
-                               "end": 0,
+                               "start": first_import.lineno - 1,
+                               "end": last_import.end_lineno - 1,
                                "id": 0}
+        start = imp["start"]
+        end = imp["end"]
+        imp["first_character_index"] = line_offsets[start]
+        imp["last_character_index"] = line_offsets[end] + len(lines[end]) - 1
 
         result.append(Chunk(**imp))
     for node in tree.body:
@@ -57,11 +72,14 @@ def python_code_chunker(python_code: dict[str, str]) -> list[Chunk]:
                 continue
             end = node.end_lineno
             data["type"] = type(node).__name__
-            data["content"] = "\n".join(lines[start: end])
+            data["content"] = "".join(lines[start: end])
             data["start"] = start
             data["end"] = end
             data["file_path"] = python_code["file_path"]
             data["id"] = 0
+            data["first_character_index"] = line_offsets[start]
+            data["last_character_index"] = line_offsets[end - 1] + \
+                len(lines[end - 1]) - 1
             result.append(Chunk(**data))
 
     return result
@@ -69,22 +87,31 @@ def python_code_chunker(python_code: dict[str, str]) -> list[Chunk]:
 
 def markdown_chunker(markdown: dict[str, str]) -> list[Chunk]:
     content = markdown["content"]
-    lines = content.splitlines()
+    lines = content.splitlines(keepends=True)
     current_title = "__intro__"
     current_lines: list[str] = []
     sections = []
-    start = 1
-    for lineno, line in enumerate(lines, start=1):
+    offset = 0
+    lines_offsets = []
+    for line in lines:
+        lines_offsets.append(offset)
+        offset += len(line)
+
+    start = 0
+    for lineno, line in enumerate(lines, start=0):
         if line.startswith("#"):
             if current_title:
                 section: dict[str, Any] = {
                     "title": current_title,
                     "type": "markdown_section",
-                    "content": "\n".join(current_lines),
+                    "content": "".join(current_lines),
                     "file_path": markdown["file_path"],
                     "start": start,
                     "end": lineno - 1,
                     "id": 0}
+                lc = lines_offsets[lineno - 1] + len(lines[lineno - 1]) - 1
+                section["first_character_index"] = lines_offsets[start]
+                section["last_character_index"] = lc
                 sections.append(Chunk(**section))
 
             current_title = line.lstrip("# ").strip()
@@ -101,5 +128,8 @@ def markdown_chunker(markdown: dict[str, str]) -> list[Chunk]:
         "end": len(lines),
         "id": 0,
     }
+    section["first_character_index"] = lines_offsets[section["start"]]
+    section["last_character_index"] = lines_offsets[len(
+        lines) - 1] + len(lines[len(lines) - 1]) - 1
     sections.append(Chunk(**section))
     return sections
