@@ -35,7 +35,7 @@ def bm25_score(query_tokens: list[str],
     tf = term_frequency(query_tokens, bm25_data.all_tokens)
     for doc_id, doc_tf in enumerate(tf):
         score = 0.0
-        for token in query_tokens:
+        for token in set(query_tokens):
             query_tf = doc_tf[token]
             if query_tf == 0:
                 continue
