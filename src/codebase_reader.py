@@ -57,6 +57,13 @@ def split_chunks(all_chunks: list[Chunk], chunk_size: int) -> list[Chunk]:
 
         else:
             chunks = splitter.split_text(chunk.content)
+            content = ""
+            for c in chunks:
+                if len(content + c) > chunk_size:
+                    break
+                content += c
+                chunks.remove(c)
+            chunks.append(content)
             new_chunks.extend(metdata_solver(chunks, chunk))
 
     return new_chunks
