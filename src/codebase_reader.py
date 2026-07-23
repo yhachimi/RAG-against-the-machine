@@ -23,14 +23,18 @@ def codebase_reader(directory: str) -> list[dict[str, Any]]:
 
 
 def metdata_solver(chunks: list[str], chunk: Chunk) -> list[Chunk]:
+    """this method make sure that's
+    every  chunk is converted from str into Chunk obj
+    and have its owen uniqe metdata like
+    last_character_index and first_character_index """
     current_offset = 0
     res: list[Chunk] = []
-    data: dict[str, Any] = {}
-    data["file_path"] = chunk.file_path
-    data["type"] = chunk.type
-    data["title"] = chunk.title
-    data["id"] = chunk.id
     for piece in chunks:
+        data: dict[str, Any] = {}
+        data["file_path"] = chunk.file_path
+        data["type"] = chunk.type
+        data["title"] = chunk.title
+        data["id"] = chunk.id
         start = chunk.content.find(piece, current_offset)
         end = start + len(piece) - 1
         current_offset = end + 1
@@ -44,9 +48,11 @@ def metdata_solver(chunks: list[str], chunk: Chunk) -> list[Chunk]:
 
 
 def split_chunks(all_chunks: list[Chunk], chunk_size: int) -> list[Chunk]:
+    """ this methdod make sure thats all chunks is out
+    of the range of chunks size sets by the user """
     new_chunks: list[Chunk] = []
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=2000,
+        chunk_size=chunk_size,
         chunk_overlap=200,
         separators=["\n\n", "\n", ". ", " ", ""],
     )
@@ -58,13 +64,16 @@ def split_chunks(all_chunks: list[Chunk], chunk_size: int) -> list[Chunk]:
         else:
             chunks = splitter.split_text(chunk.content)
             content = ""
+            merged_chunks = []
             for c in chunks:
-                if len(content + c) > chunk_size:
-                    break
-                content += c
-                chunks.remove(c)
-            chunks.append(content)
-            new_chunks.extend(metdata_solver(chunks, chunk))
+                if len(content + c) <= chunk_size:
+                    content += c
+                else:
+                    merged_chunks.append(content)
+                    content = c
+            if content:
+                merged_chunks.append(content)
+            new_chunks.extend(metdata_solver(merged_chunks, chunk))
 
     return new_chunks
 
@@ -135,6 +144,8 @@ def python_code_chunker(python_code: dict[str, str]) -> list[Chunk]:
 
 
 def markdown_chunker(markdown: dict[str, str]) -> list[Chunk]:
+    """a text markdown chunker method used the splite and the title  to
+    convert  the markdown into  chunks of sections ... """
     content = markdown["content"]
     lines = content.splitlines(keepends=True)
     current_title = "__intro__"

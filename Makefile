@@ -4,7 +4,7 @@ install:
 	@uv sync
 
 run: 
-	@uv run python3 -m src index
+	@uv run python3 -m src index --max_chunk_size  600
 
 
 debug:

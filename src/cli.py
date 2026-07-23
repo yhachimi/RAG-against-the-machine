@@ -9,6 +9,9 @@ from .tokenization import (calc_docs_lenghts, document_frequency,
 
 class Rag:
     def index(self, max_chunk_size: int = 2000) -> None:
+        """this methode is represonting the indexing part
+        markdown  and python code chunking chunks indexing
+        and calc the bm25 needed data like idf and df"""
         self.all_chunks: list[Chunk] = []
         code_base = codebase_reader("vllm-0.10.1")
         for document in code_base:
@@ -24,6 +27,8 @@ class Rag:
         for chunk_id, chunk in enumerate(self.all_chunks):
             chunk.id = chunk_id
         self.all_chunks = split_chunks(self.all_chunks, max_chunk_size)
+        for chunk_id, chunk in enumerate(self.all_chunks):
+            chunk.id = chunk_id
 
         all_tokens = tokens_genrate(self.all_chunks)
         all_docs_lenghts = calc_docs_lenghts(all_tokens)
@@ -31,13 +36,12 @@ class Rag:
         documnts_frequency: dict[str, int] = document_frequency(all_tokens)
         idf: dict[str, float] = inverse_docs_frequency(
             documnts_frequency, len(self.all_chunks))
-        bm25_data = BM25_DATA(
+        self.bm25_data = BM25_DATA(
             all_tokens=all_tokens,
             all_docs_lenghts=all_docs_lenghts,
             avg_doc_lenght=avg_doc_lenght,
             documnts_frequency=documnts_frequency,
             idf=idf)
-        print(bm25_data.avg_doc_lenght)
 
     def search(self, query: str, k: int, max_chunk_size: int = 2000) -> None:
         pass
