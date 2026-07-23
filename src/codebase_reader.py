@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from tqdm import tqdm
 
 from .models import Chunk
 
@@ -12,7 +13,8 @@ def codebase_reader(directory: str) -> list[dict[str, Any]]:
         codebase reading method"""
     root = Path(directory)
     codebase = []
-    for file in root.rglob("*"):
+    files = list(root.rglob("*"))
+    for file in tqdm(files, desc="Reading codebase"):
         if not file.is_file():
             continue
         if file.suffix in {".py", ".md"}:

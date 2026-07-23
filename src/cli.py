@@ -1,4 +1,7 @@
+import json
 from pathlib import Path
+
+from tqdm import tqdm
 
 from .codebase_reader import (codebase_reader, markdown_chunker,
                               python_code_chunker, split_chunks)
@@ -14,7 +17,7 @@ class Rag:
         and calc the bm25 needed data like idf and df"""
         self.all_chunks: list[Chunk] = []
         code_base = codebase_reader("vllm-0.10.1")
-        for document in code_base:
+        for document in tqdm(code_base, desc="Chunking"):
             suffix = Path(document["file_path"]).suffix
             if suffix == ".py":
                 chunked = python_code_chunker(document)
@@ -30,6 +33,8 @@ class Rag:
         for chunk_id, chunk in enumerate(self.all_chunks):
             chunk.id = chunk_id
 
+        root = Path("data/processed/")
+        root.mkdir(parents=True, exist_ok=True)
         all_tokens = tokens_genrate(self.all_chunks)
         all_docs_lenghts = calc_docs_lenghts(all_tokens)
         avg_doc_lenght = sum(all_docs_lenghts) / len(all_docs_lenghts)
@@ -42,6 +47,14 @@ class Rag:
             avg_doc_lenght=avg_doc_lenght,
             documnts_frequency=documnts_frequency,
             idf=idf)
+        with open(root / "chunks.json", "w", encoding="utf-8") as file:
+            json.dump([chunk.model_dump()
+                       for chunk in self.all_chunks], file, indent=4)
+        with open(root / "bm25.json", "w", encoding="utf-8") as file:
+            json.dump(self.bm25_data.model_dump(), file, indent=4)
+
+        print("✓ Indexing complete! ", end="")
+        print(f"Indexed {len(self.all_chunks)} chunks under {root}.")
 
     def search(self, query: str, k: int, max_chunk_size: int = 2000) -> None:
         pass
