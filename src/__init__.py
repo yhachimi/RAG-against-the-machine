@@ -7,7 +7,7 @@ from .tokenization import (tokens_genrate, calc_docs_lenghts,
 
 from .cli import Rag
 from .models import Chunk, BM25_DATA, MinimalSource
-
+from  .embeddings import EmbeddingModel 
 __all__ = [
     "codebase_reader",
     "python_code_chunker",
@@ -20,4 +20,5 @@ __all__ = [
     "MinimalSource",
     "inverse_docs_frequency",
     "Rag",
-    "split_chunks"]
+    "split_chunks",
+    "EmbeddingModel"]

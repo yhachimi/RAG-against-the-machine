@@ -8,9 +8,13 @@ from .codebase_reader import (codebase_reader, markdown_chunker,
 from .models import BM25_DATA, Chunk
 from .tokenization import (calc_docs_lenghts, document_frequency,
                            inverse_docs_frequency, tokens_genrate)
+from  .embeddings import EmbeddingModel 
+import  numpy as np 
 
 
 class Rag:
+    def __init__(self):
+        self.embedding_model = EmbeddingModel() 
     def index(self, max_chunk_size: int = 2000) -> None:
         """this methode is represonting the indexing part
         markdown  and python code chunking chunks indexing
@@ -33,6 +37,8 @@ class Rag:
         for chunk_id, chunk in enumerate(self.all_chunks):
             chunk.id = chunk_id
 
+        text_chunks = [chunk.content for chunk in self.all_chunks]
+
         root = Path("data/processed/")
         root.mkdir(parents=True, exist_ok=True)
         all_tokens = tokens_genrate(self.all_chunks)
@@ -47,12 +53,16 @@ class Rag:
             avg_doc_lenght=avg_doc_lenght,
             documnts_frequency=documnts_frequency,
             idf=idf)
+
+        embiders_chunks = self.embedding_model.docs_embder(text_chunks)
         with open(root / "chunks.json", "w", encoding="utf-8") as file:
             json.dump([chunk.model_dump()
                        for chunk in self.all_chunks], file, indent=4)
         with open(root / "bm25.json", "w", encoding="utf-8") as file:
             json.dump(self.bm25_data.model_dump(), file, indent=4)
 
+        
+        np.save(root / "embeddings.npy", embiders_chunks)
         print("✓ Indexing complete! ", end="")
         print(f"Indexed {len(self.all_chunks)} chunks under {root}.")
 
