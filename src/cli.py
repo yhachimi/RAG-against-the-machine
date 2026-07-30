@@ -38,9 +38,11 @@ class Rag:
             chunk.id = chunk_id
 
         text_chunks = [chunk.content for chunk in self.all_chunks]
+        embiders_chunks = self.embedding_model.docs_embder(text_chunks)
 
         root = Path("data/processed/")
         root.mkdir(parents=True, exist_ok=True)
+        np.save(root / "embeddings.npy", embiders_chunks)
         all_tokens = tokens_genrate(self.all_chunks)
         all_docs_lenghts = calc_docs_lenghts(all_tokens)
         avg_doc_lenght = sum(all_docs_lenghts) / len(all_docs_lenghts)
@@ -53,16 +55,13 @@ class Rag:
             avg_doc_lenght=avg_doc_lenght,
             documnts_frequency=documnts_frequency,
             idf=idf)
-
-        embiders_chunks = self.embedding_model.docs_embder(text_chunks)
         with open(root / "chunks.json", "w", encoding="utf-8") as file:
             json.dump([chunk.model_dump()
                        for chunk in self.all_chunks], file, indent=4)
         with open(root / "bm25.json", "w", encoding="utf-8") as file:
             json.dump(self.bm25_data.model_dump(), file, indent=4)
 
-        
-        np.save(root / "embeddings.npy", embiders_chunks)
+         
         print("✓ Indexing complete! ", end="")
         print(f"Indexed {len(self.all_chunks)} chunks under {root}.")
 
