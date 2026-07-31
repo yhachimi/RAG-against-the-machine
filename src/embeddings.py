@@ -1,14 +1,17 @@
-from .models import Chunk
+from typing import Any
+
+from FlagEmbedding import FlagModel
 
 
 class EmbeddingModel:
     def __init__(self) -> None:
-        pass
+        self.model = FlagModel(
+            "BAAI/bge-small-en-v1.5",
+            use_fp16=False,
+        )
 
-    def docs_embder(self, chunks: list[Chunk]) -> list[list[float]]:
-        res: list[list[float]] = []
-        return res
+    def docs_embder(self, docs: list[str]) -> list[list[float]]:
+        return self.model.encode(docs,batch_size=256).tolist()
 
     def query_embeding(self, query: str) -> list[float]:
-        res: list[float] = []
-        return res
+        return self.model.encode([query])[0].tolist()
