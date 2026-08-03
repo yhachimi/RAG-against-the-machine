@@ -7,11 +7,12 @@ from .tokenization import (tokens_genrate, calc_docs_lenghts,
                            query_tokens_genrate)
 
 from .cli import Rag
-from .models import Chunk, BM25_DATA, MinimalSource
+from .models import (Chunk, BM25_DATA, MinimalSource)
 from  .embeddings import EmbeddingModel 
 from .search  import  cosine_similarity 
 from .ranking import  bm25_score
-
+from .context_build import (build_context, src_builder, build_prompt)
+from .llm import LLM
 
 __all__ = [
     "codebase_reader",
@@ -28,4 +29,8 @@ __all__ = [
     "split_chunks",
     "EmbeddingModel",
     "cosine_similarity",
-    "query_tokens_genrate"]
+    "query_tokens_genrate",
+    "build_prompt",
+    "src_builder",
+    "build_prompt",
+    "LLM"]

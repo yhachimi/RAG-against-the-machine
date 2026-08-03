@@ -5,7 +5,8 @@ from tqdm import tqdm
 
 from .codebase_reader import (codebase_reader, markdown_chunker,
                               python_code_chunker, split_chunks)
-from .models import BM25_DATA, Chunk
+
+from .models import (Chunk, BM25_DATA, MinimalSource) 
 from .tokenization import (calc_docs_lenghts, document_frequency,
                            inverse_docs_frequency, tokens_genrate,
                            query_tokens_genrate,)
@@ -14,11 +15,13 @@ from  .search import cosine_similarity
 from  .embeddings import EmbeddingModel 
 import  numpy as np 
 from .ranking import bm25_score
-
+from .context_build import (build_context, src_builder, build_prompt)
+from .llm import LLM 
 
 class Rag:
     def __init__(self):
         self.embedding_model = EmbeddingModel() 
+        self.llm_model = LLM()
     def index(self, max_chunk_size: int = 2000) -> None:
         """this methode is represonting the indexing part
         markdown  and python code chunking chunks indexing
@@ -148,3 +151,9 @@ class Rag:
         semantic_result = self._semantic_search(query, k)
         bm25_result = self._bm25_search(query, k)
         hyprid_reslut =  self._hybrid_search(semantic_result, bm25_result, k)
+        context = build_context(hyprid_reslut)
+        prompt = build_prompt(query, context)
+        print(prompt)
+        answer = self.llm_model.genrate_answer(prompt)
+        answer = answer.split("<END>")[0]
+        print(answer)
