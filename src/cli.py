@@ -6,7 +6,7 @@ from tqdm import tqdm
 from .codebase_reader import (codebase_reader, markdown_chunker,
                               python_code_chunker, split_chunks)
 
-from .models import (Chunk, BM25_DATA, MinimalSource) 
+from .models import (Chunk, BM25_DATA, MinimalSource,MinimalAnswer) 
 from .tokenization import (calc_docs_lenghts, document_frequency,
                            inverse_docs_frequency, tokens_genrate,
                            query_tokens_genrate,)
@@ -17,6 +17,7 @@ import  numpy as np
 from .ranking import bm25_score
 from .context_build import (build_context, src_builder, build_prompt)
 from .llm import LLM 
+import uuid 
 
 class Rag:
     def __init__(self):
@@ -124,7 +125,7 @@ class Rag:
             norm_bm25.append((chunk, norm))
 
         alpha = 0.6
-        beta = 0.4 
+        beta = 0.4
         all_scores =  {chunk.id: {"chunk":  chunk, "semantic": score, "bm25": 0} for chunk, score in norm_semantic}
         for chunk, score in norm_bm25:
             if all_scores.get(chunk.id):
@@ -153,7 +154,10 @@ class Rag:
         hyprid_reslut =  self._hybrid_search(semantic_result, bm25_result, k)
         context = build_context(hyprid_reslut)
         prompt = build_prompt(query, context)
-        print(prompt)
         answer = self.llm_model.genrate_answer(prompt)
-        answer = answer.split("<END>")[0]
-        print(answer)
+        minisrcs = src_builder(hyprid_reslut)
+        answer = answer.split("<END>", 1)[0].strip()
+        answer_model = MinimalAnswer(
+                question_id=str(uuid.uuid4()),question=query,
+                retrieved_sources=minisrcs,answer=answer)
+        print(answer_model.answer)

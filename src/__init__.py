@@ -7,7 +7,7 @@ from .tokenization import (tokens_genrate, calc_docs_lenghts,
                            query_tokens_genrate)
 
 from .cli import Rag
-from .models import (Chunk, BM25_DATA, MinimalSource)
+from .models import (Chunk, BM25_DATA, MinimalSource, MinimalAnswer)
 from  .embeddings import EmbeddingModel 
 from .search  import  cosine_similarity 
 from .ranking import  bm25_score
